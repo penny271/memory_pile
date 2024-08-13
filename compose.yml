@@ -1,0 +1,127 @@
+services:
+  db:
+    image: postgres:16.4
+    platform: linux/amd64
+    ports:
+#      - "5432:5432"
+      - "5532:5432"
+    restart: always
+    # set shared memory limit when using docker-compose
+    # もしデータベースの負荷が高く、大量のクエリやトランザクションを扱う場合は、shm_size を増やすことを検討してください。
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: memorypile
+      POSTGRES_USER: hirotaka
+      POSTGRES_PASSWORD: memorypile
+
+  # Adminer は、データベースの管理ツールの一つです。具体的には、Webベースのデータベース管理インターフェース
+  # オプショナル 不要だった削除 ok
+  # この設定でDocker Composeを起動すると、ブラウザで http://localhost:8180 にアクセスすることで、AdminerのWebインターフェースにアクセスできます。
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+#      - 8080:8080
+      - 8180:8080
+    depends_on:
+      - db
+
+  rails:
+    working_dir: /app
+    tty: true
+    stdin_open: true
+    build:
+      context: .
+      dockerfile: "Dockerfile.dev"
+    # howMa が -p 3002 になっているので、こちらは 3010 に変更(Railsサーバーを 3010 番ポートで起動するように指示(Docker内部))
+#    command: /bin/sh -c "rm -f /app/tmp/pids/server.pid && bundle install && /app/bin/delayed_job start && bundle exec rails s -p 3010 -b '0.0.0.0'"
+
+    # delayed_job は現状使わないので削除した
+    command: /bin/sh -c "rm -f /app/tmp/pids/server.pid && bundle install && bundle exec rails s -p 3010 -b '0.0.0.0'"
+    environment:
+      # 下記２つは変更不要
+      SMTP_HOST: mail
+      SMTP_PORT: 1025
+    # 環境変数を定義したファイルを指定するために使われます。環境変数を設定ファイル内に直接書くのではなく、別のファイルから読み込むことができます。
+    # env_file:
+    #  - "./.env.dev"
+    # cachedにすることで高速化が見込める
+    volumes:
+      # ホストマシンの現在のディレクトリ（.）を、コンテナ内の /app ディレクトリにマウントします。
+      - .:/app:delegated # :delegated 書き込みをコンテナ内で優先的に処理し、ホストマシンとの同期が遅延する可能性があることを意味します。これにより、パフォーマンスが向上する場合があります。
+      # Dockerの bundle という名前のボリュームを、コンテナ内の /usr/local/bundle ディレクトリにマウントします。
+      # Rubyの依存関係（Gem）をインストールする bundle ディレクトリを永続化しています。これにより、コンテナを再起動したり再ビルドした際に、インストール済みのGemを再インストールする必要がなくなります。
+      - bundle:/usr/local/bundle:delegated
+      # Node.jsの依存関係をインストールする node_modules ディレクトリを永続化します。これにより、コンテナを再起動しても依存関係が保持され、再インストールの手間が省けます。
+      - node_modules:/app/node_modules:delegated
+      # ホストマシンの ~/.ssh ディレクトリ（SSHキーが保存されている場所）を、コンテナ内の root ユーザーの /.ssh ディレクトリにマウントします。
+      # 理由：SSHキーをコンテナ内から利用できるようにするためです。例えば、プライベートなGitリポジトリにアクセスするために使用されることがあります。
+      - ~/.ssh:/root/.ssh:delegated
+    ports:
+#      - "3002:3002"
+      - "3010:3010"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100k"
+        max-file: "5"
+    depends_on:
+      - db
+      - mail
+      - redis
+  webpack:
+    image: node:20.12.0-alpine
+    command: sh -c "npm install && npm run start"
+    build:
+      context: .
+      dockerfile: "DockerfileWebpack.dev"
+    # working_dir で指定されたディレクトリは、その後のすべてのコマンド（command や RUN、ENTRYPOINT など）が実行される際の現在の作業ディレクトリ（カレントディレクトリ）になります。
+    # working_dir: /app と指定されている場合、npm install や npm run start などのコマンドはすべて /app ディレクトリ内で実行されます。
+    working_dir: /app
+    volumes:
+      - .:/app:delegated
+      - node_modules:/app/node_modules:delegated
+    ports:
+#      - "3500:3500"
+      - "3600:3500"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100k"
+        max-file: "5"
+  mail:
+    image: mailhog/mailhog
+    ports:
+#      - 8025:8025
+      - 8125:8025
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100k"
+        max-file: "5"
+  redis:
+    image: redis:5.0.3
+    ports:
+#      - "6379:6379"
+      - "6479:6379"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100k"
+        max-file: "5"
+    command: redis-server --appendonly yes
+    volumes:
+      - './tmp/redis/data:/data'
+volumes:
+  db-data:
+    # local ドライバーは、Docker のデフォルトのボリュームドライバーです。特定のドライバーを指定しない場合、自動的に local ドライバーが使用されます。
+    # local ドライバーは、ボリュームをホストマシンのローカルファイルシステム上に作成し、管理します。具体的には、/var/lib/docker/volumes/ ディレクトリに保存されます。
+    driver: local
+  bundle:
+    driver: local
+  redis-data:
+    driver: local
+  node_modules:
