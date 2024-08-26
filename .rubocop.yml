@@ -1,0 +1,176 @@
+# inherit_from: .rubocop_todo.yml
+
+# https://blog.to-ko-s.com/rubocop-setting/ 設定参考
+# .rubocop.ymlは、ルールの設定自体を細かく設定できるファイルです
+
+require:
+  - rubocop-performance
+
+AllCops:
+  TargetRubyVersion: 3.0
+  # チェック対象外
+  Exclude:
+    - bin/*
+    - db/schema.rb
+    - db/migrate/*
+    - vendor/**/*
+    - config/**/*
+    - Gemfile
+    - features/**/*
+    - spec/**/*
+    - node_modules/*
+  DisplayCopNames: true
+
+# Rails固有の規約を追加
+Rails:
+  Enabled: true
+
+#### Style ####
+
+# 日本語の使用を許可する
+Style/AsciiComments:
+  Enabled: false
+
+# モジュール名::クラス名の定義を許可する
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+# メソッドのパラメータでハッシュ表記{}で渡すのを許可する
+Style/BracesAroundHashParameters:
+  Enabled: false
+
+# if文でand,orの使用を許可する
+Style/AndOr:
+  Enabled: false
+
+# 5行以上の場合はガード節の使用をチェックする
+Style/GuardClause:
+  MinBodyLength: 5
+
+# メソッド引数に括弧()つけることを許可する
+Style/MethodDefParentheses:
+  Enabled: false
+
+# 冗長なselfは許可する
+Style/RedundantSelf:
+  Enabled: false
+
+# 冗長なreturnは使わない
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+# 複雑な条件の時でも括弧()で囲まなくてもいい
+Style/TernaryParentheses:
+  Enabled: false
+
+# Hashのhas_key?メソッドを許可する
+Style/PreferredHashMethods:
+  Enabled: false
+
+# ドキュメントの無いpublic classを許可する
+Style/Documentation:
+  Enabled: false
+
+# !!のイディオムの使用を許可する
+Style/DoubleNegation:
+  Enabled: false
+
+# elseでnilを返す時に分かりやすいので許可する
+Style/EmptyElse:
+  EnforcedStyle: empty
+
+# sprintfやformatよりString#%の形式にする
+FormatString:
+  EnforcedStyle: percent
+
+# スコープが複数行にわたる場合でも->を使うことを許可する
+Style/Lambda:
+  Enabled: false
+
+# 区切り文字が2個以上必要になる場合のみ_区切りを必須にする
+NumericLiterals:
+  MinDigits: 7
+
+# メソッドチェーンの改行は末尾に.を入れる
+DotPosition:
+  EnforcedStyle: trailing
+
+# has_から始まるメソッドを許可する
+Naming/PredicateName:
+  NamePrefixBlacklist:
+    - "is_"
+    - "have_"
+  NamePrefix:
+    - "is_"
+    - "have_"
+
+# %記法や変数展開が必要ない場合はシングルクオートを使用する
+StringLiterals:
+  EnforcedStyle: single_quotes
+
+#################
+
+#### Metrics ####
+
+# 一行あたりの長さを120文字まで(デフォルトは80). URLを含む行は許可する
+Metrics/LineLength:
+  Max: 120
+  AllowURI: true
+  URISchemes:
+    - http
+    - https
+
+# メソッド名の文字数に制限かけない
+Metrics/MethodLength:
+  Enabled: false
+
+# クラス名の文字数に制限かけない
+Metrics/ClassLength:
+  Enabled: false
+
+# モジュール名の文字数に制限かけない
+Metrics/ModuleLength:
+  Enabled: false
+
+# 代入少なく,関数呼び出し少なく,制御構文少なく(デフォルト15)
+Metrics/AbcSize:
+  Max: 40
+
+# 循環的複雑度は10まで(デフォルトは6)
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+# 分岐の数は8まで(デフォルト7)
+Metrics/PerceivedComplexity:
+  Max: 8
+
+################
+
+#### Layout ####
+
+# class~end前の改行を許可する
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+# private/protectedは一段深くインデントする
+Layout/IndentationConsistency:
+  EnforcedStyle: rails
+
+# ハッシュでインデントの使用を許可する
+Layout/IndentFirstHashElement:
+  Enabled: false
+
+# ハッシュ前後のスペースを許可する
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+# 引数前のスペース複数を許可する
+Layout/SpaceBeforeFirstArg:
+  Enabled: false
+
+# migrationでは桁揃えが綺麗にならないことが多いのでは対象外
+Layout/ExtraSpacing:
+  Exclude:
+    - db/migrate/*
+
+###############

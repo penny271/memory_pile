@@ -1,32 +1,32 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                     :bigint           not null, primary key
+#  last_name              :string           default(""), not null
+#  first_name             :string           default(""), not null
+#  email                  :string           default(""), not null
+#  tel                    :string           default("")
+#  contact_address        :string           default("")
+#  user_icon              :string           default("")
+#  encrypted_password     :string           default(""), not null
+#  password_registered    :boolean          default(FALSE)
+#  reset_password_token   :string
+#  reset_password_sent_at :datetime
+#  remember_created_at    :datetime
+#  sign_in_count          :integer          default(0), not null
+#  current_sign_in_at     :datetime
+#  last_sign_in_at        :datetime
+#  current_sign_in_ip     :string
+#  last_sign_in_ip        :string
+#  confirmation_token     :string
+#  confirmed_at           :datetime
+#  confirmation_sent_at   :datetime
+#  unconfirmed_email      :string
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#
 class User < ApplicationRecord
-  # t.string :last_name, null: false, default: ''
-  # t.string :first_name, null: false, default: ''
-  # t.string :email, null: false, default: '' # オリジナルのカラム
-  # t.string :tel, null: true, default: ''
-  # t.string :contact_address, null: true, default: ''
-  # t.string :user_icon, default: ''
-  # t.string :encrypted_password, null: false, default: '' # オリジナルのカラム
-  # t.boolean :password_registered, default: 0
-  #
-  # ## Recoverable
-  # t.string   :reset_password_token
-  # t.datetime :reset_password_sent_at
-  #
-  # ## Rememberable
-  # t.datetime :remember_created_at
-  #
-  # ## Trackable
-  # t.integer  :sign_in_count, default: 0, null: false
-  # t.datetime :current_sign_in_at
-  # t.datetime :last_sign_in_at
-  # t.string   :current_sign_in_ip
-  # t.string   :last_sign_in_ip
-  #
-  # ## Confirmable
-  # t.string   :confirmation_token
-  # t.datetime :confirmed_at
-  # t.datetime :confirmation_sent_at
-  # t.string   :unconfirmed_email # Only if using reconfirmable
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
